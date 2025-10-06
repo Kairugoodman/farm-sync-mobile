@@ -8,77 +8,85 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 35 20% 97%;
-    --foreground: 30 10% 15%;
+    --background: 45 38% 96%;
+    --foreground: 12 35% 19%;
 
     --card: 0 0% 100%;
-    --card-foreground: 30 10% 15%;
+    --card-foreground: 12 35% 19%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 30 10% 15%;
+    --popover-foreground: 12 35% 19%;
 
-    --primary: 142 45% 35%;
+    --primary: 108 35% 47%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 30 30% 55%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 108 25% 65%;
+    --secondary-foreground: 12 35% 19%;
 
-    --muted: 40 20% 92%;
-    --muted-foreground: 30 8% 45%;
+    --muted: 45 25% 93%;
+    --muted-foreground: 12 20% 45%;
 
-    --accent: 38 92% 50%;
-    --accent-foreground: 30 10% 15%;
+    --accent: 48 100% 67%;
+    --accent-foreground: 12 35% 19%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 142 70% 35%;
+    --success: 108 45% 42%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 30 10% 15%;
+    --warning: 48 100% 67%;
+    --warning-foreground: 12 35% 19%;
 
-    --border: 30 15% 88%;
-    --input: 30 15% 88%;
-    --ring: 142 45% 35%;
+    --border: 45 20% 88%;
+    --input: 45 20% 88%;
+    --ring: 108 35% 47%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
+
+    --shadow-sm: 0 2px 4px rgba(62, 39, 35, 0.08);
+    --shadow-md: 0 4px 12px rgba(62, 39, 35, 0.12);
+    --shadow-lg: 0 8px 24px rgba(62, 39, 35, 0.15);
   }
 
   .dark {
-    --background: 30 15% 12%;
-    --foreground: 35 20% 95%;
+    --background: 12 25% 10%;
+    --foreground: 45 38% 95%;
 
-    --card: 30 12% 15%;
-    --card-foreground: 35 20% 95%;
+    --card: 12 20% 14%;
+    --card-foreground: 45 38% 95%;
 
-    --popover: 30 12% 15%;
-    --popover-foreground: 35 20% 95%;
+    --popover: 12 20% 14%;
+    --popover-foreground: 45 38% 95%;
 
-    --primary: 142 50% 45%;
+    --primary: 108 40% 52%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 30 25% 35%;
+    --secondary: 108 20% 35%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 30 12% 20%;
-    --muted-foreground: 35 15% 65%;
+    --muted: 12 15% 20%;
+    --muted-foreground: 45 15% 65%;
 
-    --accent: 38 92% 50%;
-    --accent-foreground: 30 15% 12%;
+    --accent: 48 100% 67%;
+    --accent-foreground: 12 25% 10%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 142 70% 45%;
+    --success: 108 50% 47%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 30 15% 12%;
+    --warning: 48 100% 67%;
+    --warning-foreground: 12 25% 10%;
 
-    --border: 30 12% 25%;
-    --input: 30 12% 25%;
-    --ring: 142 50% 45%;
+    --border: 12 15% 25%;
+    --input: 12 15% 25%;
+    --ring: 108 40% 52%;
+
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
   }
 }
 
@@ -88,6 +96,20 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-inter antialiased;
+  }
+}
+
+@layer utilities {
+  .shadow-soft {
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .shadow-soft-md {
+    box-shadow: var(--shadow-md);
+  }
+  
+  .shadow-soft-lg {
+    box-shadow: var(--shadow-lg);
   }
 }

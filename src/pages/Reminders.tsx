@@ -57,7 +57,7 @@ const Reminders = () => {
 
     return (
       <div 
-        className={`p-4 rounded-lg border-2 transition-all ${
+        className={`p-4 rounded-2xl border-2 transition-all hover:shadow-soft ${
           reminder.completed 
             ? 'bg-muted/50 border-border opacity-60' 
             : isOverdue 
@@ -65,27 +65,27 @@ const Reminders = () => {
             : getTypeColor(reminder.type)
         }`}
       >
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-3.5">
           <Checkbox
             checked={reminder.completed}
             onCheckedChange={() => toggleReminder(reminder)}
-            className="mt-1"
+            className="mt-1.5 h-5 w-5 rounded-lg"
           />
-          <div className="flex-1 space-y-1">
+          <div className="flex-1 space-y-2">
             <div className="flex items-start justify-between gap-2">
-              <p className={`font-medium ${reminder.completed ? 'line-through' : ''}`}>
+              <p className={`font-bold text-base ${reminder.completed ? 'line-through' : ''}`}>
                 {reminder.title}
               </p>
               {isOverdue && !reminder.completed && (
-                <Badge variant="destructive" className="text-xs">
+                <Badge variant="destructive" className="text-xs font-semibold px-2.5 py-1 rounded-lg">
                   Overdue
                 </Badge>
               )}
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground font-medium">
               {cow?.name || 'Unknown'} • {format(new Date(reminder.date), 'MMM d, yyyy')}
             </p>
-            <Badge variant="outline" className="text-xs capitalize">
+            <Badge variant="outline" className="text-xs capitalize font-semibold px-2.5 py-1 rounded-lg border-2">
               {reminder.type}
             </Badge>
           </div>
@@ -96,22 +96,31 @@ const Reminders = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <div className="max-w-2xl mx-auto p-4 space-y-4">
+      <div className="max-w-2xl mx-auto p-5 space-y-5">
         {/* Header */}
-        <div className="pt-2">
-          <h1 className="text-2xl font-bold text-foreground">Reminders</h1>
-          <p className="text-muted-foreground">
-            {overdueReminders.length} overdue • {upcomingReminders.length + todayReminders.length} upcoming
-          </p>
+        <div className="pt-4 pb-2">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="bg-gradient-to-br from-primary to-success p-3 rounded-2xl shadow-soft-md">
+              <Bell className="h-7 w-7 text-white" strokeWidth={2.5} />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground tracking-tight">🔔 Reminders</h1>
+              <p className="text-muted-foreground font-medium">
+                {overdueReminders.length} overdue • {upcomingReminders.length + todayReminders.length} upcoming
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Overdue */}
         {overdueReminders.length > 0 && (
-          <Card className="border-destructive/50">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2 text-destructive">
-                <Clock className="h-5 w-5" />
-                Overdue ({overdueReminders.length})
+          <Card className="border-2 border-destructive/40 bg-destructive/5 shadow-soft-md">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg flex items-center gap-2.5 text-destructive font-bold">
+                <div className="p-2 bg-destructive/15 rounded-xl">
+                  <Clock className="h-5 w-5" strokeWidth={2.5} />
+                </div>
+                ⏰ Overdue ({overdueReminders.length})
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -124,11 +133,13 @@ const Reminders = () => {
 
         {/* Today */}
         {todayReminders.length > 0 && (
-          <Card className="border-warning/50">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2 text-warning">
-                <Bell className="h-5 w-5" />
-                Today ({todayReminders.length})
+          <Card className="border-2 border-warning/40 bg-warning/5 shadow-soft-md">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg flex items-center gap-2.5 text-warning font-bold">
+                <div className="p-2 bg-warning/15 rounded-xl">
+                  <Bell className="h-5 w-5" strokeWidth={2.5} />
+                </div>
+                📌 Today ({todayReminders.length})
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -141,11 +152,13 @@ const Reminders = () => {
 
         {/* Upcoming */}
         {upcomingReminders.length > 0 && (
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <CalendarIcon className="h-5 w-5" />
-                Upcoming ({upcomingReminders.length})
+          <Card className="shadow-soft-md border-0">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg flex items-center gap-2.5 font-bold">
+                <div className="p-2 bg-primary/15 rounded-xl">
+                  <CalendarIcon className="h-5 w-5 text-primary" strokeWidth={2.5} />
+                </div>
+                📅 Upcoming ({upcomingReminders.length})
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -158,11 +171,13 @@ const Reminders = () => {
 
         {/* Completed */}
         {completedReminders.length > 0 && (
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2 text-muted-foreground">
-                <Check className="h-5 w-5" />
-                Completed ({completedReminders.length})
+          <Card className="shadow-soft-md border-0">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg flex items-center gap-2.5 text-muted-foreground font-bold">
+                <div className="p-2 bg-muted rounded-xl">
+                  <Check className="h-5 w-5" strokeWidth={2.5} />
+                </div>
+                ✅ Completed ({completedReminders.length})
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -175,10 +190,10 @@ const Reminders = () => {
 
         {/* Empty State */}
         {reminders.length === 0 && (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <Bell className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-              <p className="text-muted-foreground">No reminders yet</p>
+          <Card className="shadow-soft-md border-0">
+            <CardContent className="p-10 text-center">
+              <Bell className="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" strokeWidth={1.5} />
+              <p className="text-muted-foreground font-medium text-lg">No reminders yet</p>
             </CardContent>
           </Card>
         )}

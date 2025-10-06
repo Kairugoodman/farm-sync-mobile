@@ -70,51 +70,55 @@ const CowDetails = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <div className="max-w-2xl mx-auto p-4 space-y-4">
+      <div className="max-w-2xl mx-auto p-5 space-y-5">
         {/* Header */}
-        <div className="flex items-center gap-3 pt-2">
+        <div className="pt-4 pb-2">
           <Button
             variant="ghost"
             size="icon"
+            className="mb-3 rounded-xl"
             onClick={() => navigate('/cows')}
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-6 w-6" strokeWidth={2.5} />
           </Button>
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold text-foreground">{cow.name}</h1>
-            <p className="text-muted-foreground">Tag: {cow.tagNumber}</p>
+          <div className="flex items-center gap-3 mb-2">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground tracking-tight">🐄 {cow.name}</h1>
+              <p className="text-muted-foreground font-medium">Tag: {cow.tagNumber}</p>
+            </div>
           </div>
         </div>
 
         {/* Basic Info */}
-        <Card>
-          <CardHeader className="pb-3">
+        <Card className="shadow-soft-md border-0">
+          <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">Basic Information</CardTitle>
+              <CardTitle className="text-lg font-bold">📋 Basic Information</CardTitle>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
                   size="icon"
+                  className="rounded-xl border-2 shadow-soft"
                   onClick={() => navigate(`/cows?edit=${cow.id}`)}
                 >
-                  <Edit className="h-4 w-4" />
+                  <Edit className="h-4 w-4" strokeWidth={2.5} />
                 </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="outline" size="icon">
-                      <Trash2 className="h-4 w-4 text-destructive" />
+                    <Button variant="outline" size="icon" className="rounded-xl border-2 shadow-soft">
+                      <Trash2 className="h-4 w-4 text-destructive" strokeWidth={2.5} />
                     </Button>
                   </AlertDialogTrigger>
-                  <AlertDialogContent>
+                  <AlertDialogContent className="rounded-2xl">
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Remove cow from herd?</AlertDialogTitle>
-                      <AlertDialogDescription>
+                      <AlertDialogTitle className="font-bold">Remove cow from herd?</AlertDialogTitle>
+                      <AlertDialogDescription className="font-medium">
                         This will permanently delete {cow.name} and all associated records. This action cannot be undone.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
+                      <AlertDialogCancel className="rounded-xl font-semibold">Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground rounded-xl font-semibold shadow-soft">
                         Delete
                       </AlertDialogAction>
                     </AlertDialogFooter>
@@ -123,23 +127,24 @@ const CowDetails = () => {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="grid grid-cols-2 gap-4">
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-5">
               <div>
-                <p className="text-sm text-muted-foreground">Breed</p>
-                <p className="font-medium">{cow.breed}</p>
+                <p className="text-sm text-muted-foreground font-medium mb-1">Breed</p>
+                <p className="font-bold text-base">{cow.breed}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Age</p>
-                <p className="font-medium">{age} years</p>
+                <p className="text-sm text-muted-foreground font-medium mb-1">Age</p>
+                <p className="font-bold text-base">{age} years</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Date of Birth</p>
-                <p className="font-medium">{format(new Date(cow.dateOfBirth), 'MMM d, yyyy')}</p>
+                <p className="text-sm text-muted-foreground font-medium mb-1">Date of Birth</p>
+                <p className="font-bold text-base">{format(new Date(cow.dateOfBirth), 'MMM d, yyyy')}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Status</p>
+                <p className="text-sm text-muted-foreground font-medium mb-1">Status</p>
                 <Badge 
+                  className="font-semibold px-3 py-1.5 rounded-xl"
                   variant={
                     cow.status === 'pregnant' ? 'default' :
                     cow.status === 'sick' ? 'destructive' :
@@ -155,27 +160,27 @@ const CowDetails = () => {
         </Card>
 
         {/* Reproductive Info */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Reproductive Information</CardTitle>
+        <Card className="shadow-soft-md border-0">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-bold">👶 Reproductive Information</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-4">
             {cow.lastHeat && (
               <div>
-                <p className="text-sm text-muted-foreground">Last Heat</p>
-                <p className="font-medium">{format(new Date(cow.lastHeat), 'MMM d, yyyy')}</p>
+                <p className="text-sm text-muted-foreground font-medium mb-1">🌸 Last Heat</p>
+                <p className="font-bold text-base">{format(new Date(cow.lastHeat), 'MMM d, yyyy')}</p>
               </div>
             )}
             {cow.lastInsemination && (
               <div>
-                <p className="text-sm text-muted-foreground">Last Insemination</p>
-                <p className="font-medium">{format(new Date(cow.lastInsemination), 'MMM d, yyyy')}</p>
+                <p className="text-sm text-muted-foreground font-medium mb-1">💉 Last Insemination</p>
+                <p className="font-bold text-base">{format(new Date(cow.lastInsemination), 'MMM d, yyyy')}</p>
               </div>
             )}
             {cow.expectedCalving && (
               <div>
-                <p className="text-sm text-muted-foreground">Expected Calving</p>
-                <p className="font-medium text-success">{format(new Date(cow.expectedCalving), 'MMM d, yyyy')}</p>
+                <p className="text-sm text-muted-foreground font-medium mb-1">📅 Expected Calving</p>
+                <p className="font-bold text-base text-success">{format(new Date(cow.expectedCalving), 'MMM d, yyyy')}</p>
               </div>
             )}
           </CardContent>
@@ -183,50 +188,50 @@ const CowDetails = () => {
 
         {/* Notes */}
         {cow.notes && (
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Notes</CardTitle>
+          <Card className="shadow-soft-md border-0">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg font-bold">📝 Notes</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm">{cow.notes}</p>
+              <p className="text-sm font-medium leading-relaxed">{cow.notes}</p>
             </CardContent>
           </Card>
         )}
 
         {/* Event Timeline */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Event Timeline</CardTitle>
+        <Card className="shadow-soft-md border-0">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-bold">📅 Event Timeline</CardTitle>
           </CardHeader>
           <CardContent>
             {events.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 {events.map((event, index) => (
-                  <div key={event.id} className="flex gap-3">
+                  <div key={event.id} className="flex gap-4">
                     <div className="flex flex-col items-center">
-                      <div className={`p-2 rounded-full bg-muted ${getEventColor(event.type)}`}>
+                      <div className={`p-2.5 rounded-xl shadow-soft ${getEventColor(event.type)}`}>
                         {getEventIcon(event.type)}
                       </div>
                       {index < events.length - 1 && (
-                        <div className="w-0.5 h-full bg-border my-1" />
+                        <div className="w-1 h-full bg-border my-2 rounded-full" />
                       )}
                     </div>
-                    <div className="flex-1 pb-4">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="font-medium capitalize">{event.type}</p>
-                        <Badge variant="outline" className="text-xs">
+                    <div className="flex-1 pb-2">
+                      <div className="flex items-center gap-2.5 mb-1.5">
+                        <p className="font-bold capitalize text-base">{event.type}</p>
+                        <Badge variant="outline" className="text-xs font-semibold px-2.5 py-1 rounded-lg border-2">
                           {format(new Date(event.date), 'MMM d, yyyy')}
                         </Badge>
                       </div>
                       {event.notes && (
-                        <p className="text-sm text-muted-foreground">{event.notes}</p>
+                        <p className="text-sm text-muted-foreground font-medium leading-relaxed">{event.notes}</p>
                       )}
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-center text-muted-foreground py-4">No events recorded</p>
+              <p className="text-center text-muted-foreground py-8 font-medium">No events recorded</p>
             )}
           </CardContent>
         </Card>
