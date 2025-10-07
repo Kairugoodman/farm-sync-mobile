@@ -1,10 +1,11 @@
-import { Beef, Calendar, AlertTriangle, Plus } from 'lucide-react';
+import { Calendar, AlertTriangle, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatCard } from '@/components/StatCard';
 import { getCows, getReminders } from '@/lib/localStorage';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
+import logoImage from '@/assets/farmsync-logo.png';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -26,9 +27,11 @@ const Dashboard = () => {
         {/* Header */}
         <div className="pt-4 pb-2">
           <div className="flex items-center gap-3 mb-2">
-            <div className="bg-gradient-to-br from-primary to-success p-3 rounded-2xl shadow-soft-md">
-              <Beef className="h-8 w-8 text-white" strokeWidth={2.5} />
-            </div>
+            <img 
+              src={logoImage} 
+              alt="FarmSync Logo" 
+              className="w-14 h-14 rounded-2xl shadow-soft-md"
+            />
             <div>
               <h1 className="text-3xl font-bold text-foreground tracking-tight">FarmSync</h1>
               <p className="text-muted-foreground font-medium">Livestock Dashboard</p>
@@ -41,7 +44,7 @@ const Dashboard = () => {
           <StatCard
             title="Total Cows"
             value={totalCows}
-            icon={Beef}
+            icon={Calendar}
             variant="default"
           />
           <StatCard
