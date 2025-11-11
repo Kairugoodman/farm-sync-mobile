@@ -14,7 +14,80 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      cow_events: {
+        Row: {
+          completed: boolean | null
+          cow_id: string
+          created_at: string | null
+          description: string | null
+          event_date: string
+          event_type: string
+          id: string
+          reminder_date: string | null
+        }
+        Insert: {
+          completed?: boolean | null
+          cow_id: string
+          created_at?: string | null
+          description?: string | null
+          event_date: string
+          event_type: string
+          id?: string
+          reminder_date?: string | null
+        }
+        Update: {
+          completed?: boolean | null
+          cow_id?: string
+          created_at?: string | null
+          description?: string | null
+          event_date?: string
+          event_type?: string
+          id?: string
+          reminder_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cow_events_cow_id_fkey"
+            columns: ["cow_id"]
+            isOneToOne: false
+            referencedRelation: "cows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cows: {
+        Row: {
+          birth_date: string
+          breed: string
+          calving_date: string | null
+          created_at: string | null
+          expected_next_calving: string | null
+          id: string
+          insemination_date: string | null
+          name: string
+        }
+        Insert: {
+          birth_date: string
+          breed: string
+          calving_date?: string | null
+          created_at?: string | null
+          expected_next_calving?: string | null
+          id?: string
+          insemination_date?: string | null
+          name: string
+        }
+        Update: {
+          birth_date?: string
+          breed?: string
+          calving_date?: string | null
+          created_at?: string | null
+          expected_next_calving?: string | null
+          id?: string
+          insemination_date?: string | null
+          name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
