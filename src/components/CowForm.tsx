@@ -5,8 +5,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Cow, saveCow } from '@/lib/localStorage';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Cow, saveCow, saveEvent, saveReminder } from '@/lib/localStorage';
 import { toast } from 'sonner';
+import { calculateEventsFromCalving, calculateEventsFromInsemination } from '@/lib/eventScheduler';
 
 interface CowFormProps {
   cow?: Cow;
@@ -26,6 +28,8 @@ export const CowForm = ({ cow, onSuccess, onCancel }: CowFormProps) => {
       notes: '',
     }
   );
+  const [startDateType, setStartDateType] = useState<'calving' | 'insemination'>('calving');
+  const [startDate, setStartDate] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +40,24 @@ export const CowForm = ({ cow, onSuccess, onCancel }: CowFormProps) => {
     }
 
     saveCow(formData);
-    toast.success(cow ? 'Cow updated successfully' : 'Cow added successfully');
+
+    // Generate automatic events and reminders if start date is provided (new cow only)
+    if (startDate && !cow) {
+      const dateObj = new Date(startDate);
+      const { events, reminders } = 
+        startDateType === 'calving'
+          ? calculateEventsFromCalving(formData.id, dateObj)
+          : calculateEventsFromInsemination(formData.id, dateObj);
+
+      // Save all generated events and reminders
+      events.forEach(event => saveEvent(event));
+      reminders.forEach(reminder => saveReminder(reminder));
+
+      toast.success(`Cow added with ${events.length} predicted events!`);
+    } else {
+      toast.success(cow ? 'Cow updated successfully' : 'Cow added successfully');
+    }
+
     onSuccess();
   };
 
@@ -156,6 +177,57 @@ export const CowForm = ({ cow, onSuccess, onCancel }: CowFormProps) => {
               rows={4}
             />
           </div>
+
+          {!cow && (
+            <>
+              <div className="pt-6 border-t-2 border-border space-y-4">
+                <div>
+                  <Label className="text-base font-bold text-foreground mb-2 block">
+                    🗓️ Automatic Event Scheduling
+                  </Label>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Automatically generate a 12-month cycle of events and reminders based on a starting date.
+                  </p>
+                </div>
+
+                <RadioGroup 
+                  value={startDateType} 
+                  onValueChange={(value: 'calving' | 'insemination') => setStartDateType(value)}
+                >
+                  <div className="flex items-center space-x-3 p-3 rounded-xl border-2 border-border hover:border-primary transition-colors">
+                    <RadioGroupItem value="calving" id="calving" />
+                    <Label htmlFor="calving" className="text-base cursor-pointer font-semibold flex-1">
+                      Start from Calving Date
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-3 p-3 rounded-xl border-2 border-border hover:border-primary transition-colors">
+                    <RadioGroupItem value="insemination" id="insemination" />
+                    <Label htmlFor="insemination" className="text-base cursor-pointer font-semibold flex-1">
+                      Start from Insemination Date
+                    </Label>
+                  </div>
+                </RadioGroup>
+
+                <div className="space-y-2">
+                  <Label htmlFor="startDate" className="text-base font-semibold">
+                    {startDateType === 'calving' ? '📅 Calving Date' : '💉 Insemination Date'}
+                  </Label>
+                  <Input 
+                    id="startDate"
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="h-12"
+                  />
+                  <p className="text-sm text-muted-foreground mt-2">
+                    {startDateType === 'calving' 
+                      ? 'Events will be scheduled from this calving date (Day 0)'
+                      : 'Expected calving date will be calculated (280 days after insemination)'}
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
 
           <div className="flex gap-3 pt-4">
             <Button type="button" variant="outline" onClick={onCancel} className="flex-1 h-12">

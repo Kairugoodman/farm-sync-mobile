@@ -110,6 +110,9 @@ const CalendarPage = () => {
                 <div className="space-y-3">
                   {selectedEvents.map(event => {
                     const cow = getCowById(event.cowId);
+                    const isPredicted = event.id.startsWith('predicted-');
+                    const isFuture = new Date(event.date) > new Date();
+                    
                     return (
                       <div 
                         key={event.id}
@@ -117,11 +120,16 @@ const CalendarPage = () => {
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <div className="flex items-center gap-2.5 mb-1.5">
+                            <div className="flex items-center gap-2.5 mb-1.5 flex-wrap">
                               <p className="font-bold text-base">{cow?.name || 'Unknown'}</p>
                               <Badge className="font-semibold px-3 py-1 rounded-xl capitalize" variant={getEventBadge(event.type) as any}>
                                 {event.type}
                               </Badge>
+                              {isPredicted && isFuture && (
+                                <Badge className="bg-accent text-accent-foreground font-semibold px-2.5 py-1 rounded-xl text-xs">
+                                  predicted
+                                </Badge>
+                              )}
                             </div>
                             {event.notes && (
                               <p className="text-sm text-muted-foreground font-medium">{event.notes}</p>

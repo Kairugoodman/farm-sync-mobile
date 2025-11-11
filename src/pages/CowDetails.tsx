@@ -206,29 +206,39 @@ const CowDetails = () => {
           <CardContent>
             {events.length > 0 ? (
               <div className="space-y-5">
-                {events.map((event, index) => (
-                  <div key={event.id} className="flex gap-4">
-                    <div className="flex flex-col items-center">
-                      <div className={`p-2.5 rounded-xl shadow-soft ${getEventColor(event.type)}`}>
-                        {getEventIcon(event.type)}
+                {events.map((event, index) => {
+                  const isPredicted = event.id.startsWith('predicted-');
+                  const isFuture = new Date(event.date) > new Date();
+                  
+                  return (
+                    <div key={event.id} className="flex gap-4">
+                      <div className="flex flex-col items-center">
+                        <div className={`p-2.5 rounded-xl shadow-soft ${getEventColor(event.type)}`}>
+                          {getEventIcon(event.type)}
+                        </div>
+                        {index < events.length - 1 && (
+                          <div className="w-1 h-full bg-border my-2 rounded-full" />
+                        )}
                       </div>
-                      {index < events.length - 1 && (
-                        <div className="w-1 h-full bg-border my-2 rounded-full" />
-                      )}
-                    </div>
-                    <div className="flex-1 pb-2">
-                      <div className="flex items-center gap-2.5 mb-1.5">
-                        <p className="font-bold capitalize text-base">{event.type}</p>
-                        <Badge variant="outline" className="text-xs font-semibold px-2.5 py-1 rounded-lg border-2">
-                          {format(new Date(event.date), 'MMM d, yyyy')}
-                        </Badge>
+                      <div className="flex-1 pb-2">
+                        <div className="flex items-center gap-2.5 mb-1.5 flex-wrap">
+                          <p className="font-bold capitalize text-base">{event.type}</p>
+                          <Badge variant="outline" className="text-xs font-semibold px-2.5 py-1 rounded-lg border-2">
+                            {format(new Date(event.date), 'MMM d, yyyy')}
+                          </Badge>
+                          {isPredicted && isFuture && (
+                            <Badge className="bg-accent text-accent-foreground text-xs font-semibold px-2.5 py-1 rounded-lg">
+                              predicted
+                            </Badge>
+                          )}
+                        </div>
+                        {event.notes && (
+                          <p className="text-sm text-muted-foreground font-medium leading-relaxed">{event.notes}</p>
+                        )}
                       </div>
-                      {event.notes && (
-                        <p className="text-sm text-muted-foreground font-medium leading-relaxed">{event.notes}</p>
-                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <p className="text-center text-muted-foreground py-8 font-medium">No events recorded</p>
