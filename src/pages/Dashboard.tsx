@@ -1,41 +1,85 @@
-import { Calendar, AlertTriangle, Plus } from 'lucide-react';
+import { Calendar, AlertTriangle, Plus, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatCard } from '@/components/StatCard';
-import { getCows, getReminders } from '@/lib/localStorage';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/hooks/useAuth';
+import { getCows, getCowEvents } from '@/lib/supabaseQueries';
+import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import logoImage from '@/assets/farmsync-logo.png';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const cows = getCows();
-  const reminders = getReminders();
+  const { signOut, user } = useAuth();
+  const [cows, setCows] = useState<any[]>([]);
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [cowsData, eventsData] = await Promise.all([
+          getCows(),
+          getCowEvents(),
+        ]);
+        setCows(cowsData);
+        setEvents(eventsData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        toast.error('Failed to load dashboard data');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const handleLogout = async () => {
+    await signOut();
+    toast.success('Logged out successfully');
+    navigate('/auth');
+  };
   
   const totalCows = cows.length;
-  const pregnantCows = cows.filter(c => c.status === 'pregnant').length;
-  const overdueReminders = reminders.filter(r => !r.completed && new Date(r.date) < new Date()).length;
-  const upcomingEvents = reminders.filter(r => !r.completed && new Date(r.date) >= new Date()).length;
+  const pregnantCows = cows.filter(c => c.insemination_date && !c.calving_date).length;
+  const overdueEvents = events.filter(e => !e.completed && new Date(e.event_date) < new Date()).length;
+  const upcomingEvents = events.filter(e => !e.completed && new Date(e.event_date) >= new Date()).length;
 
-  const recentAlerts = cows
-    .filter(c => c.status === 'sick' || overdueReminders > 0)
-    .slice(0, 3);
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="max-w-2xl mx-auto p-5 space-y-6">
         {/* Header */}
         <div className="pt-4 pb-2">
-          <div className="flex items-center gap-3 mb-2">
-            <img 
-              src={logoImage} 
-              alt="FarmSync Logo" 
-              className="w-14 h-14 rounded-2xl shadow-soft-md"
-            />
-            <div>
-              <h1 className="text-3xl font-bold text-foreground tracking-tight">FarmSync</h1>
-              <p className="text-muted-foreground font-medium">Livestock Dashboard</p>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <img 
+                src={logoImage} 
+                alt="FarmSync Logo" 
+                className="w-14 h-14 rounded-2xl shadow-soft-md"
+              />
+              <div>
+                <h1 className="text-3xl font-bold text-foreground tracking-tight">FarmSync</h1>
+                <p className="text-muted-foreground font-medium">Livestock Dashboard</p>
+              </div>
             </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleLogout}
+              className="rounded-xl"
+            >
+              <LogOut className="h-5 w-5" />
+            </Button>
           </div>
         </div>
 
@@ -55,7 +99,7 @@ const Dashboard = () => {
           />
           <StatCard
             title="Overdue"
-            value={overdueReminders}
+            value={overdueEvents}
             icon={AlertTriangle}
             variant="destructive"
           />
@@ -68,7 +112,7 @@ const Dashboard = () => {
         </div>
 
         {/* Alerts */}
-        {overdueReminders > 0 && (
+        {overdueEvents > 0 && (
           <Card className="border-2 border-destructive/30 bg-destructive/5 shadow-soft-md">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2.5">
@@ -80,12 +124,12 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold">You have {overdueReminders} overdue reminder{overdueReminders !== 1 ? 's' : ''}</p>
+                <p className="text-sm font-semibold">You have {overdueEvents} overdue event{overdueEvents !== 1 ? 's' : ''}</p>
                 <Button 
                   variant="outline" 
                   size="sm"
                   className="shadow-soft"
-                  onClick={() => navigate('/reminders')}
+                  onClick={() => navigate('/calendar')}
                 >
                   View
                 </Button>
@@ -126,36 +170,36 @@ const Dashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {cows.slice(0, 5).map(cow => (
-              <div 
-                key={cow.id}
-                className="flex items-center justify-between p-4 rounded-2xl bg-muted/40 hover:bg-muted/70 cursor-pointer transition-all duration-200 hover:shadow-soft border border-transparent hover:border-border"
-                onClick={() => navigate(`/cows/${cow.id}`)}
-              >
-                <div>
-                  <p className="font-semibold text-base">{cow.name}</p>
-                  <p className="text-sm text-muted-foreground">Tag: {cow.tagNumber}</p>
-                </div>
-                <Badge 
-                  className="font-semibold px-3 py-1 rounded-xl"
-                  variant={
-                    cow.status === 'pregnant' ? 'default' :
-                    cow.status === 'sick' ? 'destructive' :
-                    cow.status === 'inseminated' ? 'secondary' :
-                    'outline'
-                  }
+            {cows.length === 0 ? (
+              <p className="text-muted-foreground text-center py-4">
+                No cows added yet. Add your first cow to get started!
+              </p>
+            ) : (
+              cows.slice(0, 5).map((cow) => (
+                <div
+                  key={cow.id}
+                  className="flex items-center justify-between p-4 rounded-2xl bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer border-2 border-transparent hover:border-primary/20"
+                  onClick={() => navigate(`/cows/${cow.id}`)}
                 >
-                  {cow.status}
-                </Badge>
-              </div>
-            ))}
-            <Button 
-              variant="ghost" 
-              className="w-full font-semibold rounded-xl hover:bg-muted/70"
-              onClick={() => navigate('/cows')}
-            >
-              View All Cows
-            </Button>
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-success flex items-center justify-center text-white font-bold text-lg shadow-soft">
+                      {cow.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-bold text-foreground">{cow.name}</p>
+                      <p className="text-sm text-muted-foreground">{cow.breed}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    {cow.insemination_date && !cow.calving_date && (
+                      <Badge variant="default" className="shadow-soft font-semibold">
+                        Pregnant
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
           </CardContent>
         </Card>
       </div>

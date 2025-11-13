@@ -4,9 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { getCows, Cow } from '@/lib/localStorage';
+import { getCows, Cow } from '@/lib/supabaseQueries';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CowForm } from '@/components/CowForm';
+import { toast } from 'sonner';
 
 const Cows = () => {
   const navigate = useNavigate();
@@ -15,23 +16,35 @@ const Cows = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingCow, setEditingCow] = useState<Cow | undefined>();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setCows(getCows());
+    fetchCows();
     if (searchParams.get('action') === 'add') {
       setShowForm(true);
       setSearchParams({});
     }
   }, [searchParams, setSearchParams]);
 
+  const fetchCows = async () => {
+    try {
+      const data = await getCows();
+      setCows(data);
+    } catch (error) {
+      console.error('Error fetching cows:', error);
+      toast.error('Failed to load cows');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filteredCows = cows.filter(cow =>
     cow.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    cow.tagNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
     cow.breed.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleFormSuccess = () => {
-    setCows(getCows());
+  const handleFormSuccess = async () => {
+    await fetchCows();
     setShowForm(false);
     setEditingCow(undefined);
   };
@@ -40,6 +53,14 @@ const Cows = () => {
     setEditingCow(cow);
     setShowForm(true);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   if (showForm) {
     return (
@@ -107,24 +128,22 @@ const Cows = () => {
                   <div className="flex-1 space-y-2">
                     <div className="flex items-center gap-2.5">
                       <h3 className="font-bold text-lg">{cow.name}</h3>
-                      <Badge 
-                        className="font-semibold px-3 py-1 rounded-xl"
-                        variant={
-                          cow.status === 'pregnant' ? 'default' :
-                          cow.status === 'sick' ? 'destructive' :
-                          cow.status === 'inseminated' ? 'secondary' :
-                          'outline'
-                        }
-                      >
-                        {cow.status}
-                      </Badge>
+                  <Badge 
+                    className="font-semibold px-3 py-1 rounded-xl"
+                    variant={
+                      cow.insemination_date && !cow.calving_date ? 'default' :
+                      'outline'
+                    }
+                  >
+                    {cow.insemination_date && !cow.calving_date ? 'Pregnant' : 'Active'}
+                  </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground font-medium">
-                      Tag: {cow.tagNumber} • {cow.breed}
+                      {cow.breed} • Born: {new Date(cow.birth_date).toLocaleDateString()}
                     </p>
-                    {cow.expectedCalving && (
+                    {cow.expected_next_calving && (
                       <p className="text-sm text-success font-semibold flex items-center gap-1.5">
-                        👶 Expected calving: {new Date(cow.expectedCalving).toLocaleDateString()}
+                        👶 Expected calving: {new Date(cow.expected_next_calving).toLocaleDateString()}
                       </p>
                     )}
                   </div>
