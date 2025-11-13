@@ -15,7 +15,7 @@ const Cows = () => {
   const [cows, setCows] = useState<Cow[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
-  const [editingCow, setEditingCow] = useState<Cow | undefined>();
+  const [editingCow, setEditingCow] = useState<Cow | undefined>(undefined);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
