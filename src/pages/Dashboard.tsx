@@ -45,7 +45,22 @@ const Dashboard = () => {
   const totalCows = cows.length;
   const pregnantCows = cows.filter(c => c.insemination_date && !c.calving_date).length;
   const overdueEvents = events.filter(e => !e.completed && new Date(e.event_date) < new Date()).length;
-  const upcomingEvents = events.filter(e => !e.completed && new Date(e.event_date) >= new Date()).length;
+  
+  // Get only the immediate upcoming event per cow within the next 7 days
+  const oneWeekFromNow = new Date();
+  oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
+  
+  const upcomingEventsByCow = new Map<string, typeof events[0]>();
+  events
+    .filter(e => !e.completed && new Date(e.event_date) >= new Date() && new Date(e.event_date) <= oneWeekFromNow)
+    .forEach(event => {
+      const existing = upcomingEventsByCow.get(event.cow_id);
+      if (!existing || new Date(event.event_date) < new Date(existing.event_date)) {
+        upcomingEventsByCow.set(event.cow_id, event);
+      }
+    });
+  
+  const upcomingEvents = upcomingEventsByCow.size;
 
   if (loading) {
     return (

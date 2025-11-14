@@ -79,3 +79,12 @@ export const updateEventCompletion = async (
 
   if (error) throw error;
 };
+
+export const deleteCowEvent = async (eventId: string): Promise<void> => {
+  const { error } = await supabase
+    .from('cow_events')
+    .delete()
+    .eq('id', eventId);
+
+  if (error) throw error;
+};
