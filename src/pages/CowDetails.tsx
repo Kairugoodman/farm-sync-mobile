@@ -4,7 +4,7 @@ import { ArrowLeft, Calendar, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { getCowById, getEventsByCowId, deleteCow, Cow, Event } from '@/lib/localStorage';
+import { getCowById, getCowEvents, deleteCow, Cow, CowEvent } from '@/lib/supabaseQueries';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import {
@@ -23,37 +23,56 @@ const CowDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [cow, setCow] = useState<Cow | null>(null);
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] = useState<CowEvent[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (id) {
-      const cowData = getCowById(id);
+      fetchCowData();
+    }
+  }, [id]);
+
+  const fetchCowData = async () => {
+    if (!id) return;
+    
+    try {
+      const cowData = await getCowById(id);
       if (cowData) {
         setCow(cowData);
-        setEvents(getEventsByCowId(id).sort((a, b) => 
-          new Date(b.date).getTime() - new Date(a.date).getTime()
+        const cowEvents = await getCowEvents(id);
+        setEvents(cowEvents.sort((a, b) => 
+          new Date(a.event_date).getTime() - new Date(b.event_date).getTime()
         ));
       } else {
         navigate('/cows');
       }
-    }
-  }, [id, navigate]);
-
-  const handleDelete = () => {
-    if (id) {
-      deleteCow(id);
-      toast.success('Cow removed from herd');
+    } catch (error) {
+      console.error('Error fetching cow data:', error);
+      toast.error('Failed to load cow details');
       navigate('/cows');
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (!cow) return null;
+  const handleDelete = async () => {
+    if (id) {
+      try {
+        await deleteCow(id);
+        toast.success('Cow removed from herd');
+        navigate('/cows');
+      } catch (error) {
+        console.error('Error deleting cow:', error);
+        toast.error('Failed to delete cow');
+      }
+    }
+  };
 
-  const getEventIcon = (type: Event['type']) => {
+  const getEventIcon = (type: CowEvent['event_type']) => {
     return <Calendar className="h-4 w-4" />;
   };
 
-  const getEventColor = (type: Event['type']) => {
+  const getEventColor = (type: CowEvent['event_type']) => {
     switch (type) {
       case 'heat': return 'text-warning';
       case 'insemination': return 'text-primary';
@@ -64,8 +83,18 @@ const CowDetails = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!cow) return null;
+
   const age = Math.floor(
-    (new Date().getTime() - new Date(cow.dateOfBirth).getTime()) / (1000 * 60 * 60 * 24 * 365)
+    (new Date().getTime() - new Date(cow.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 365)
   );
 
   return (
@@ -84,7 +113,7 @@ const CowDetails = () => {
           <div className="flex items-center gap-3 mb-2">
             <div>
               <h1 className="text-2xl font-bold text-foreground tracking-tight">🐄 {cow.name}</h1>
-              <p className="text-muted-foreground font-medium">Tag: {cow.tagNumber}</p>
+              <p className="text-muted-foreground font-medium">{cow.breed}</p>
             </div>
           </div>
         </div>
@@ -99,7 +128,7 @@ const CowDetails = () => {
                   variant="outline"
                   size="icon"
                   className="rounded-xl border-2 shadow-soft"
-                  onClick={() => navigate(`/cows?edit=${cow.id}`)}
+                  onClick={() => navigate('/cows')}
                 >
                   <Edit className="h-4 w-4" strokeWidth={2.5} />
                 </Button>
@@ -139,20 +168,15 @@ const CowDetails = () => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground font-medium mb-1">Date of Birth</p>
-                <p className="font-bold text-base">{format(new Date(cow.dateOfBirth), 'MMM d, yyyy')}</p>
+                <p className="font-bold text-base">{format(new Date(cow.birth_date), 'MMM d, yyyy')}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground font-medium mb-1">Status</p>
                 <Badge 
                   className="font-semibold px-3 py-1.5 rounded-xl"
-                  variant={
-                    cow.status === 'pregnant' ? 'default' :
-                    cow.status === 'sick' ? 'destructive' :
-                    cow.status === 'inseminated' ? 'secondary' :
-                    'outline'
-                  }
+                  variant={cow.insemination_date && !cow.calving_date ? 'default' : 'outline'}
                 >
-                  {cow.status}
+                  {cow.insemination_date && !cow.calving_date ? 'Pregnant' : 'Active'}
                 </Badge>
               </div>
             </div>
@@ -160,40 +184,30 @@ const CowDetails = () => {
         </Card>
 
         {/* Reproductive Info */}
-        <Card className="shadow-soft-md border-0">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg font-bold">👶 Reproductive Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {cow.lastHeat && (
-              <div>
-                <p className="text-sm text-muted-foreground font-medium mb-1">🌸 Last Heat</p>
-                <p className="font-bold text-base">{format(new Date(cow.lastHeat), 'MMM d, yyyy')}</p>
-              </div>
-            )}
-            {cow.lastInsemination && (
-              <div>
-                <p className="text-sm text-muted-foreground font-medium mb-1">💉 Last Insemination</p>
-                <p className="font-bold text-base">{format(new Date(cow.lastInsemination), 'MMM d, yyyy')}</p>
-              </div>
-            )}
-            {cow.expectedCalving && (
-              <div>
-                <p className="text-sm text-muted-foreground font-medium mb-1">📅 Expected Calving</p>
-                <p className="font-bold text-base text-success">{format(new Date(cow.expectedCalving), 'MMM d, yyyy')}</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Notes */}
-        {cow.notes && (
+        {(cow.calving_date || cow.insemination_date || cow.expected_next_calving) && (
           <Card className="shadow-soft-md border-0">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-bold">📝 Notes</CardTitle>
+              <CardTitle className="text-lg font-bold">👶 Reproductive Information</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-sm font-medium leading-relaxed">{cow.notes}</p>
+            <CardContent className="space-y-4">
+              {cow.calving_date && (
+                <div>
+                  <p className="text-sm text-muted-foreground font-medium mb-1">🌸 Last Calving</p>
+                  <p className="font-bold text-base">{format(new Date(cow.calving_date), 'MMM d, yyyy')}</p>
+                </div>
+              )}
+              {cow.insemination_date && (
+                <div>
+                  <p className="text-sm text-muted-foreground font-medium mb-1">💉 Insemination Date</p>
+                  <p className="font-bold text-base">{format(new Date(cow.insemination_date), 'MMM d, yyyy')}</p>
+                </div>
+              )}
+              {cow.expected_next_calving && (
+                <div>
+                  <p className="text-sm text-muted-foreground font-medium mb-1">📅 Expected Next Calving</p>
+                  <p className="font-bold text-base text-success">{format(new Date(cow.expected_next_calving), 'MMM d, yyyy')}</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
@@ -208,13 +222,13 @@ const CowDetails = () => {
               <div className="space-y-5">
                 {events.map((event, index) => {
                   const isPredicted = event.id.startsWith('predicted-');
-                  const isFuture = new Date(event.date) > new Date();
+                  const isFuture = new Date(event.event_date) > new Date();
                   
                   return (
                     <div key={event.id} className="flex gap-4">
                       <div className="flex flex-col items-center">
-                        <div className={`p-2.5 rounded-xl shadow-soft ${getEventColor(event.type)}`}>
-                          {getEventIcon(event.type)}
+                        <div className={`p-2.5 rounded-xl shadow-soft ${getEventColor(event.event_type)}`}>
+                          {getEventIcon(event.event_type)}
                         </div>
                         {index < events.length - 1 && (
                           <div className="w-1 h-full bg-border my-2 rounded-full" />
@@ -222,9 +236,9 @@ const CowDetails = () => {
                       </div>
                       <div className="flex-1 pb-2">
                         <div className="flex items-center gap-2.5 mb-1.5 flex-wrap">
-                          <p className="font-bold capitalize text-base">{event.type}</p>
+                          <p className="font-bold capitalize text-base">{event.event_type.replace('_', ' ')}</p>
                           <Badge variant="outline" className="text-xs font-semibold px-2.5 py-1 rounded-lg border-2">
-                            {format(new Date(event.date), 'MMM d, yyyy')}
+                            {format(new Date(event.event_date), 'MMM d, yyyy')}
                           </Badge>
                           {isPredicted && isFuture && (
                             <Badge className="bg-accent text-accent-foreground text-xs font-semibold px-2.5 py-1 rounded-lg">
@@ -232,8 +246,8 @@ const CowDetails = () => {
                             </Badge>
                           )}
                         </div>
-                        {event.notes && (
-                          <p className="text-sm text-muted-foreground font-medium leading-relaxed">{event.notes}</p>
+                        {event.description && (
+                          <p className="text-sm text-muted-foreground font-medium leading-relaxed">{event.description}</p>
                         )}
                       </div>
                     </div>
