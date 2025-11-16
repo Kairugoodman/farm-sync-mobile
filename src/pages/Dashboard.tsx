@@ -1,21 +1,25 @@
-import { Calendar, AlertTriangle, Plus, LogOut } from 'lucide-react';
+import { Calendar, AlertTriangle, Plus, LogOut, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatCard } from '@/components/StatCard';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
+import { useSubscription } from '@/hooks/useSubscription';
 import { getCows, getCowEvents } from '@/lib/supabaseQueries';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import logoImage from '@/assets/farmsync-logo.png';
+import { supabase } from '@/integrations/supabase/client';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
+  const { isPremium, loading: subscriptionLoading, upgradeToPremium, checkSubscription } = useSubscription();
   const [cows, setCows] = useState<any[]>([]);
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userName, setUserName] = useState<string>('Farmer');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -26,6 +30,19 @@ const Dashboard = () => {
         ]);
         setCows(cowsData);
         setEvents(eventsData);
+
+        // Get user profile for name
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('email')
+            .eq('id', user.id)
+            .single();
+          
+          if (profile?.email) {
+            setUserName(profile.email.split('@')[0]);
+          }
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
         toast.error('Failed to load dashboard data');
@@ -34,7 +51,16 @@ const Dashboard = () => {
       }
     };
     fetchData();
-  }, []);
+
+    // Check subscription on mount and when returning from checkout
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('checkout') === 'success') {
+      setTimeout(() => {
+        checkSubscription();
+        toast.success('Subscription activated! Welcome to Premium! 🎉');
+      }, 1000);
+    }
+  }, [user, checkSubscription]);
 
   const handleLogout = async () => {
     await signOut();
@@ -62,7 +88,7 @@ const Dashboard = () => {
   
   const upcomingEvents = upcomingEventsByCow.size;
 
-  if (loading) {
+  if (loading || subscriptionLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -84,7 +110,17 @@ const Dashboard = () => {
               />
               <div>
                 <h1 className="text-3xl font-bold text-foreground tracking-tight">FarmSync</h1>
-                <p className="text-muted-foreground font-medium">Livestock Dashboard</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-muted-foreground font-medium">Welcome, {userName}</p>
+                  {isPremium ? (
+                    <Badge variant="default" className="gap-1">
+                      <Crown className="h-3 w-3" />
+                      Premium
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary">Free</Badge>
+                  )}
+                </div>
               </div>
             </div>
             <Button
@@ -159,12 +195,22 @@ const Dashboard = () => {
             <CardTitle className="text-lg font-bold">⚡ Quick Actions</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
+            {!isPremium && (
+              <Button 
+                className="w-full h-14 text-base font-semibold shadow-soft-md hover:shadow-soft-lg transition-all rounded-2xl bg-gradient-to-r from-primary to-success" 
+                onClick={upgradeToPremium}
+              >
+                <Crown className="mr-2 h-6 w-6" strokeWidth={2.5} />
+                Upgrade to Premium - $29.99/month
+              </Button>
+            )}
             <Button 
               className="w-full h-14 text-base font-semibold shadow-soft-md hover:shadow-soft-lg transition-all rounded-2xl" 
               onClick={() => navigate('/cows?action=add')}
             >
               <Plus className="mr-2 h-6 w-6" strokeWidth={2.5} />
               Add New Cow
+              {!isPremium && <span className="ml-2 text-xs">({cows.length}/5 free)</span>}
             </Button>
             <Button 
               variant="outline" 
