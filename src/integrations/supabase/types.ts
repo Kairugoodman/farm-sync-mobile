@@ -104,16 +104,19 @@ export type Database = {
           created_at: string | null
           email: string | null
           id: string
+          is_premium: boolean
         }
         Insert: {
           created_at?: string | null
           email?: string | null
           id: string
+          is_premium?: boolean
         }
         Update: {
           created_at?: string | null
           email?: string | null
           id?: string
+          is_premium?: boolean
         }
         Relationships: []
       }
@@ -122,7 +125,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      can_add_cow: { Args: { user_uuid: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
