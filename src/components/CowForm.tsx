@@ -45,7 +45,13 @@ export const CowForm = ({ cow, onSuccess, onCancel }: CowFormProps) => {
       onSuccess();
     } catch (error: any) {
       console.error('Error saving cow:', error);
-      toast.error(error.message || 'Failed to save cow');
+      if (error.message === 'FREE_LIMIT_REACHED') {
+        toast.error('You\'ve reached the free limit of 5 cows. Please upgrade to Premium to add more!', {
+          duration: 5000,
+        });
+      } else {
+        toast.error(error.message || 'Failed to save cow');
+      }
     } finally {
       setLoading(false);
     }

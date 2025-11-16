@@ -30,6 +30,17 @@ export const saveCow = async (cow: TablesInsert<'cows'>): Promise<Cow> => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Not authenticated');
 
+  // Check if user can add more cows (only if adding new cow, not updating)
+  if (!cow.id) {
+    const { data: canAdd, error: canAddError } = await supabase
+      .rpc('can_add_cow', { user_uuid: user.id });
+
+    if (canAddError) throw canAddError;
+    if (!canAdd) {
+      throw new Error('FREE_LIMIT_REACHED');
+    }
+  }
+
   const cowData = { ...cow, user_id: user.id };
 
   const { data, error } = await supabase
