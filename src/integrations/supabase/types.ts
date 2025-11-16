@@ -65,6 +65,7 @@ export type Database = {
           id: string
           insemination_date: string | null
           name: string
+          user_id: string | null
         }
         Insert: {
           birth_date: string
@@ -75,6 +76,7 @@ export type Database = {
           id?: string
           insemination_date?: string | null
           name: string
+          user_id?: string | null
         }
         Update: {
           birth_date?: string
@@ -85,6 +87,33 @@ export type Database = {
           id?: string
           insemination_date?: string | null
           name?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cows_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          id: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          id?: string
         }
         Relationships: []
       }
