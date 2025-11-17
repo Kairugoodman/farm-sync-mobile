@@ -201,7 +201,7 @@ const Dashboard = () => {
                 onClick={upgradeToPremium}
               >
                 <Crown className="mr-2 h-6 w-6" strokeWidth={2.5} />
-                Upgrade to Premium - $29.99/month
+                Upgrade to Premium - KES 200 /month
               </Button>
             )}
             <Button 
