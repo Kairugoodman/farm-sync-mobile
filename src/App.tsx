@@ -13,6 +13,7 @@ import CalendarPage from "./pages/CalendarPage";
 import CowDetails from "./pages/CowDetails";
 import Reminders from "./pages/Reminders";
 import Auth from "./pages/Auth";
+import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -61,6 +62,7 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
+            <Route path="/landing" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
             <Route
               path="/"
