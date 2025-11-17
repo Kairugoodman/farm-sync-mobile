@@ -26,8 +26,8 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const stripeKey = Deno.env.get("stripe_backend_key");
-    if (!stripeKey) throw new Error("stripe_backend_key is not set");
+    const stripeKey = Deno.env.get("Stripe_backend_key");
+    if (!stripeKey) throw new Error("Stripe_backend_key is not set");
     logStep("Stripe key verified");
 
     const authHeader = req.headers.get("Authorization");
