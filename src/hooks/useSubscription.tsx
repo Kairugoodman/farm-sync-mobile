@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
 
-export const PREMIUM_PRICE_ID = 'price_REPLACE_WITH_YOUR_PRICE_ID'; // Replace this with actual Stripe price ID
+export const PREMIUM_PRICE_ID = 'price_1SUXZ46DToEdjp573vA9iW1K';
 
 export const useSubscription = () => {
   const { user } = useAuth();
