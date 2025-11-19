@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { to: '/', icon: Home, label: 'Home' },
+  { to: '/dashboard', icon: Home, label: 'Home' },
   { to: '/cows', icon: Beef, label: 'Cows' },
   { to: '/calendar', icon: Calendar, label: 'Calendar' },
   { to: '/reminders', icon: Bell, label: 'Reminders' },
