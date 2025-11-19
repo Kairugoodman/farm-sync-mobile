@@ -30,8 +30,27 @@ const Reminders = () => {
 
   const overdueReminders = reminders.filter(r => !r.completed && isPast(new Date(r.date)) && !isToday(new Date(r.date)));
   const todayReminders = reminders.filter(r => !r.completed && isToday(new Date(r.date)));
-  const upcomingReminders = reminders.filter(r => !r.completed && isFuture(new Date(r.date)) && !isToday(new Date(r.date)));
+  const allUpcomingReminders = reminders.filter(r => !r.completed && isFuture(new Date(r.date)) && !isToday(new Date(r.date)));
   const completedReminders = reminders.filter(r => r.completed);
+
+  // Group upcoming reminders by cow and get only the next immediate event for each cow
+  const upcomingReminders = allUpcomingReminders.reduce((acc, reminder) => {
+    const existingReminder = acc.find(r => r.cowId === reminder.cowId);
+    if (!existingReminder) {
+      acc.push(reminder);
+    } else {
+      // Replace if this reminder is earlier
+      const existingDate = new Date(existingReminder.date).getTime();
+      const currentDate = new Date(reminder.date).getTime();
+      if (currentDate < existingDate) {
+        const index = acc.findIndex(r => r.cowId === reminder.cowId);
+        acc[index] = reminder;
+      }
+    }
+    return acc;
+  }, [] as Reminder[]).sort((a, b) => 
+    new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
 
   function isToday(date: Date) {
     const today = new Date();
