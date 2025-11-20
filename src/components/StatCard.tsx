@@ -18,15 +18,15 @@ export const StatCard = ({ title, value, icon: Icon, variant = 'default' }: Stat
   };
 
   return (
-    <Card className="shadow-soft-md hover:shadow-soft-lg transition-all duration-300 border-0">
-      <CardContent className="p-5">
+    <Card className="shadow-soft-md hover:shadow-soft-lg transition-all duration-300 border border-border/50 bg-card/50 backdrop-blur-sm">
+      <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div className="space-y-2">
-            <p className="text-sm text-muted-foreground font-medium">{title}</p>
-            <p className="text-3xl font-bold tracking-tight">{value}</p>
+            <p className="text-sm text-muted-foreground font-semibold uppercase tracking-wide">{title}</p>
+            <p className="text-4xl font-bold tracking-tight text-foreground">{value}</p>
           </div>
-          <div className={cn('p-4 rounded-2xl border-2', variantStyles[variant])}>
-            <Icon className="h-7 w-7" strokeWidth={2.5} />
+          <div className={cn('p-4 rounded-2xl border', variantStyles[variant])}>
+            <Icon className="h-8 w-8" strokeWidth={2.5} />
           </div>
         </div>
       </CardContent>
